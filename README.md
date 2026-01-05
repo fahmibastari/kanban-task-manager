@@ -43,6 +43,7 @@ A professional full-stack Kanban board application demonstrating clean architect
    Create a `.env` file in the `backend` folder:
    ```env
    JWT_SECRET=your_super_secret_key_123
+   DATABASE_URL="file:./dev.db"
    ```
 5. Run Development Server:
    ```bash
