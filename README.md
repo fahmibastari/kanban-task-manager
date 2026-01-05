@@ -120,3 +120,93 @@ We utilized a **Monorepo-style** structure (without workspaces complexity) for c
 - `frontend/`: Contains the Next.js Client. It uses a **Feature-based** structure (`components/KanbanBoard`, `app/dashboard`) to keep UI logic close to where it's used.
 
 This separation ensures that the backend remains a pure, stateless API service, while the frontend handles all presentation and interactive state.
+
+---
+
+## Development Journey
+
+This section documents the complete evolution of the project, organized chronologically by implementation phase:
+
+### Phase 1: Backend Foundation (Commits 1-3)
+
+#### Commit 1: Auth Guard & Strict Validation
+**Focus**: Security-first authentication infrastructure.
+
+Implemented `JwtStrategy` to extract tokens from HTTP-Only cookies and created `JwtAuthGuard` to protect private routes. Added strict input validation using `ValidationPipe` with DTOs (`CreateUserDto`, `LoginDto`).
+
+**Key Decision**: Chose to enforce validation globally rather than per-route to prevent any unsafe data from entering the system.
+
+#### Commit 2: Project Module with Data Isolation
+**Focus**: Core project management with ownership enforcement.
+
+Built the complete Projects CRUD system with strict data isolation. Every operation validates that `ownerId === userId` before proceeding.
+
+**Key Decision**: Manually implemented `UpdateProjectDto` instead of using `PartialType` from `@nestjs/mapped-types` to avoid an extra dependency for a single DTO.
+
+#### Commit 3: Task Module & Kanban Logic
+**Focus**: Task management with drag-and-drop support.
+
+Implemented the Tasks module with a dedicated `/tasks/:id/move` endpoint for Kanban reordering. Added a reusable `validateProjectOwnership` helper method to ensure users only create tasks in their own projects.
+
+**Key Decision**: Separated the "move" logic from "update" to keep concerns clear and allow for future bulk-reordering optimizations.
+
+### Phase 2: API Completion (Commit 4)
+
+#### Commit 4: Auth Polish (Profile & Logout)
+**Focus**: Session management and user context.
+
+Added `GET /auth/profile` (protected endpoint returning user info) and `POST /auth/logout` (clears the access_token cookie).
+
+**Key Decision**: Since cookies are HttpOnly, the frontend cannot read them to know who's logged in. The `/auth/profile` endpoint solves this by allowing the frontend to fetch the current user context on mount.
+
+### Phase 3: Frontend Development (Commit 5)
+
+#### Commit 5: Frontend Implementation
+**Focus**: Complete UI with authentication and Kanban board.
+
+Initialized Next.js 15, implemented `AuthContext` for global auth state, built Login/Register pages with Shadcn/UI, and integrated the Kanban Board using `@hello-pangea/dnd`.
+
+**Technical Resolutions**:
+- Fixed `cookieParser is not a function` by changing from `import * as cookieParser` to `import cookieParser`
+- Removed nested `.git` directory from `create-next-app` to maintain clean monorepo structure
+- Resolved hydration mismatch by adding `suppressHydrationWarning` to handle browser extension interference
+- Fixed 401 errors caused by stale `Authentication` cookie (legacy naming) by forcing fresh login with correct `access_token` cookie
+
+### Phase 4: Feature Completion (Commit 6)
+
+#### Commit 6: Polish & UI Completeness
+**Focus**: Complete CRUD UI and environment variable security.
+
+Added Edit/Delete functionality for both Projects (Dashboard) and Tasks (Kanban Board). Refactored backend to use `@nestjs/config` with `.env` file for `JWT_SECRET`.
+
+**Key Decision**: Moved all sensitive configuration to environment variables to prevent accidental commits of secrets and enable environment-specific configs.
+
+### Phase 5: Production Readiness (Commits 7-10)
+
+#### Commit 7: Final Code Cleanup
+**Focus**: Professional code standards.
+
+Removed all development comments, unused imports, and AI-generated notes. Standardized documentation style across Controllers and Modules.
+
+**Key Decision**: Clean, self-documenting code is better than over-commented code. Variable names and structure should speak for themselves.
+
+#### Commit 8: Localization (ID → EN)
+**Focus**: International consistency.
+
+Translated all user-facing strings (error messages, UI labels, button text) from Indonesian to English.
+
+**Key Decision**: English as the primary language ensures broader accessibility and professional presentation.
+
+#### Commit 9: Configuration Refactor
+**Focus**: Best practices for database configuration.
+
+Moved hardcoded SQLite path from `schema.prisma` to `.env` as `DATABASE_URL`.
+
+**Key Decision**: Even local development databases should use environment variables for consistency with production deployment patterns.
+
+#### Commit 10: UX Fix - Redirect Logic
+**Focus**: Seamless authentication flow.
+
+Updated Dashboard to automatically redirect unauthenticated users to `/login` instead of rendering "Access Denied".
+
+**Key Decision**: Silent redirects provide better UX than error messages. The flow now seamlessly guides users: `/` → `/dashboard` → `/login` (if not authenticated).
