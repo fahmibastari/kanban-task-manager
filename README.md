@@ -35,11 +35,16 @@ A professional full-stack Kanban board application demonstrating clean architect
    cd backend
    npm install
    ```
-2. Setup Database:
+3. Setup Database:
    ```bash
    npx prisma migrate dev
    ```
-3. Run Development Server:
+4. Setup Environment Variables:
+   Create a `.env` file in the `backend` folder:
+   ```env
+   JWT_SECRET=your_super_secret_key_123
+   ```
+5. Run Development Server:
    ```bash
    npm run start:dev
    ```
