@@ -9,6 +9,7 @@ async function bootstrap() {
   // Pakai as any supaya TS tidak protes soal call signature
   app.use((cookieParser as any)());
 
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // Hapus properti yang tidak ada di DTO
