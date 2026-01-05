@@ -1,0 +1,15 @@
+# Dependencies
+node_modules
+dist
+.next
+out
+build
+
+# Prisma / SQLite
+backend/prisma/dev.db
+backend/prisma/dev.db-journal
+.env
+
+# OS
+.DS_Store
+Thumbs.db
