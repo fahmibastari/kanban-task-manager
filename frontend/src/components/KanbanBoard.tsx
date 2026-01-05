@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, Pencil, Trash2 } from 'lucide-react';
 import api from '@/lib/api';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
@@ -34,9 +34,13 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
     const [loading, setLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-    // Form State
     const [newTaskTitle, setNewTaskTitle] = useState('');
     const [newTaskDesc, setNewTaskDesc] = useState('');
+
+    const [editingTask, setEditingTask] = useState<Task | null>(null);
+    const [editTaskTitle, setEditTaskTitle] = useState('');
+    const [editTaskDesc, setEditTaskDesc] = useState('');
+    const [isEditOpen, setIsEditOpen] = useState(false);
 
     useEffect(() => {
         fetchTasks();
@@ -51,6 +55,38 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
             console.error('Failed to fetch tasks', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDeleteTask = async (taskId: string) => {
+        if (!confirm('Delete this task?')) return;
+        try {
+            await api.delete(`/tasks/${taskId}`);
+            setTasks((prev) => prev.filter((t) => t.id !== taskId));
+        } catch (error) {
+            console.error('Failed to delete task', error);
+        }
+    };
+
+    const openEditDialog = (task: Task) => {
+        setEditingTask(task);
+        setEditTaskTitle(task.title);
+        setEditTaskDesc(task.description || '');
+        setIsEditOpen(true);
+    };
+
+    const handleUpdateTask = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingTask) return;
+        try {
+            const { data } = await api.patch(`/tasks/${editingTask.id}`, {
+                title: editTaskTitle,
+                description: editTaskDesc,
+            });
+            setTasks((prev) => prev.map((t) => (t.id === editingTask.id ? data : t)));
+            setIsEditOpen(false);
+        } catch (error) {
+            console.error('Failed to update task', error);
         }
     };
 
@@ -83,38 +119,26 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
             return;
         }
 
-        // Clone tasks for optimistic update
         const newTasks = Array.from(tasks);
         const movedTask = newTasks.find((t) => t.id === draggableId);
 
         if (!movedTask) return;
 
-        // Update status locally
         const targetStatus = destination.droppableId;
 
-        // NOTE: Logic reorder local yang akurat agak kompleks untuk dnd list tunggal yang difilter
-        // Untuk simplifikasi visual: Kita hanya update status di client
-        // dan biarkan backend menangani order exact nya, lalu fetch ulang atau biarkan user refresh.
-        // Tapi user ingin "clean implementation".
-        // Mari kita update status task yang digerakkan.
-
         movedTask.status = targetStatus;
-        // Update order (sementara ambil index destination sebagai order baru)
         movedTask.order = destination.index;
 
         setTasks(newTasks);
 
-        // Call API
         try {
             await api.patch(`/tasks/${draggableId}/move`, {
                 status: targetStatus,
-                newOrder: destination.index, // Backend harus handle 'insert' logic sebenarnya
+                newOrder: destination.index,
             });
-            // Optional: Fetch ulang agar order dari backend sinkron
-            // await fetchTasks(); 
         } catch (error) {
             console.error('Move failed', error);
-            fetchTasks(); // Revert on error
+            fetchTasks();
         }
     };
 
@@ -154,6 +178,32 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
                 </Dialog>
             </div>
 
+            <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Edit Task</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleUpdateTask} className="space-y-4">
+                        <div className="space-y-2">
+                            <Label>Title</Label>
+                            <Input
+                                value={editTaskTitle}
+                                onChange={(e) => setEditTaskTitle(e.target.value)}
+                                required
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Description</Label>
+                            <Textarea
+                                value={editTaskDesc}
+                                onChange={(e) => setEditTaskDesc(e.target.value)}
+                            />
+                        </div>
+                        <Button type="submit" className="w-full">Save Changes</Button>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
             <DragDropContext onDragEnd={onDragEnd}>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {COLUMNS.map((col) => (
@@ -176,15 +226,33 @@ export default function KanbanBoard({ projectId }: KanbanBoardProps) {
                                                             ref={provided.innerRef}
                                                             {...provided.draggableProps}
                                                             {...provided.dragHandleProps}
-                                                            className="cursor-move hover:shadow-md transition-shadow"
+                                                            className="cursor-move hover:shadow-md transition-shadow group relative"
                                                         >
-                                                            <CardContent className="p-4">
+                                                            <CardContent className="p-4 pr-10">
                                                                 <p className="font-medium">{task.title}</p>
                                                                 {task.description && (
                                                                     <p className="text-xs text-gray-500 mt-1 line-clamp-2">
                                                                         {task.description}
                                                                     </p>
                                                                 )}
+                                                                <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-6 w-6"
+                                                                        onClick={() => openEditDialog(task)}
+                                                                    >
+                                                                        <Pencil className="h-3 w-3" />
+                                                                    </Button>
+                                                                    <Button
+                                                                        variant="ghost"
+                                                                        size="icon"
+                                                                        className="h-6 w-6 text-red-500 hover:text-red-600"
+                                                                        onClick={() => handleDeleteTask(task.id)}
+                                                                    >
+                                                                        <Trash2 className="h-3 w-3" />
+                                                                    </Button>
+                                                                </div>
                                                             </CardContent>
                                                         </Card>
                                                     )}

@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { UsersService } from './users.service';
-import { PrismaService } from '../prisma.service'; // Import ini
+import { PrismaService } from '../prisma.service';
 
 @Module({
-  providers: [UsersService, PrismaService], // Tambahkan PrismaService di sini
-  exports: [UsersService], // Export ini agar AuthService bisa pakai fungsi findByEmail
+  providers: [UsersService, PrismaService],
+  exports: [UsersService],
 })
-export class UsersModule {}
+export class UsersModule { }

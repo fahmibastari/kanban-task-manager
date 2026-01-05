@@ -66,6 +66,44 @@ export default function DashboardPage() {
         }
     };
 
+    const [editingProject, setEditingProject] = useState<Project | null>(null);
+    const [editName, setEditName] = useState('');
+    const [isEditOpen, setIsEditOpen] = useState(false);
+
+    const handleDeleteProject = async () => {
+        if (!selectedProject) return;
+        if (!confirm('Are you sure you want to delete this project? All tasks will be lost.')) return;
+
+        try {
+            await api.delete(`/projects/${selectedProject}`);
+            setProjects((prev) => prev.filter(p => p.id !== selectedProject));
+            setSelectedProject(null);
+        } catch (error) {
+            console.error('Failed to delete project', error);
+        }
+    };
+
+    const openEditDialog = () => {
+        const proj = projects.find(p => p.id === selectedProject);
+        if (proj) {
+            setEditingProject(proj);
+            setEditName(proj.name);
+            setIsEditOpen(true);
+        }
+    };
+
+    const handleUpdateProject = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingProject) return;
+        try {
+            const { data } = await api.patch(`/projects/${editingProject.id}`, { name: editName });
+            setProjects(prev => prev.map(p => p.id === editingProject.id ? data : p));
+            setIsEditOpen(false);
+        } catch (error) {
+            console.error('Failed to update project', error);
+        }
+    };
+
     if (authLoading) return <div className="p-8">Loading session...</div>;
     if (!user) return <div className="p-8">Access Denied</div>;
 
@@ -88,21 +126,33 @@ export default function DashboardPage() {
                     <div className="flex items-center gap-4">
                         <Label className="text-lg font-medium">Project:</Label>
                         {projects.length > 0 ? (
-                            <Select
-                                value={selectedProject || ''}
-                                onValueChange={setSelectedProject}
-                            >
-                                <SelectTrigger className="w-[200px]">
-                                    <SelectValue placeholder="Select Project" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    {projects.map((p) => (
-                                        <SelectItem key={p.id} value={p.id}>
-                                            {p.name}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
+                            <>
+                                <Select
+                                    value={selectedProject || ''}
+                                    onValueChange={setSelectedProject}
+                                >
+                                    <SelectTrigger className="w-[200px]">
+                                        <SelectValue placeholder="Select Project" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {projects.map((p) => (
+                                            <SelectItem key={p.id} value={p.id}>
+                                                {p.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                {selectedProject && (
+                                    <div className="flex gap-2">
+                                        <Button variant="outline" size="sm" onClick={openEditDialog}>
+                                            Edit
+                                        </Button>
+                                        <Button variant="destructive" size="sm" onClick={handleDeleteProject}>
+                                            Delete
+                                        </Button>
+                                    </div>
+                                )}
+                            </>
                         ) : (
                             <p className="text-sm text-gray-500">No projects yet.</p>
                         )}
@@ -128,6 +178,25 @@ export default function DashboardPage() {
                                     />
                                 </div>
                                 <Button type="submit" className="w-full">Create</Button>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+
+                    <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Edit Project</DialogTitle>
+                            </DialogHeader>
+                            <form onSubmit={handleUpdateProject} className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label>Project Name</Label>
+                                    <Input
+                                        value={editName}
+                                        onChange={(e) => setEditName(e.target.value)}
+                                        required
+                                    />
+                                </div>
+                                <Button type="submit" className="w-full">Save Changes</Button>
                             </form>
                         </DialogContent>
                     </Dialog>

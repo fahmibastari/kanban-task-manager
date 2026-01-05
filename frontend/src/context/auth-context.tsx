@@ -24,7 +24,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const [loading, setLoading] = useState(true);
     const router = useRouter();
 
-    // Cek sesi saat mount
     useEffect(() => {
         checkAuth();
     }, []);
@@ -42,14 +41,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const login = async (email: string, pass: string) => {
         await api.post('/auth/login', { email, password: pass });
-        await checkAuth(); // Refresh user info
+        await checkAuth();
         router.push('/dashboard');
     };
 
     const register = async (email: string, pass: string) => {
         await api.post('/auth/register', { email, password: pass });
-        // Bisa langsung login atau redirect ke login
-        // Kita auto-login saja biar cepat
         await login(email, pass);
     };
 

@@ -12,14 +12,13 @@ import { MoveTaskDto } from './dto/move-task.dto';
 export class TasksService {
     constructor(private prisma: PrismaService) { }
 
-    // Helper untuk memverifikasi kepemilikan Project
     private async validateProjectOwnership(userId: string, projectId: string) {
         const project = await this.prisma.project.findFirst({
             where: { id: projectId, ownerId: userId },
         });
         if (!project) {
             throw new ForbiddenException(
-                'Project not found or you do not have permission',
+                'Access to this project is denied',
             );
         }
     }

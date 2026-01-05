@@ -35,7 +35,6 @@ export class ProjectsService {
     }
 
     async update(userId: string, id: string, updateProjectDto: UpdateProjectDto) {
-        // Pastikan project ada dan milik user
         await this.findOne(userId, id);
 
         return this.prisma.project.update({
@@ -45,7 +44,6 @@ export class ProjectsService {
     }
 
     async remove(userId: string, id: string) {
-        // Pastikan project ada dan milik user
         await this.findOne(userId, id);
 
         return this.prisma.project.delete({

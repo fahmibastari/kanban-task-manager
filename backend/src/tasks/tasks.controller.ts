@@ -26,15 +26,6 @@ export class TasksController {
         return this.tasksService.create(req.user.userId, createTaskDto);
     }
 
-    // Get tasks for a specific project
-    // Bisa lewat Query Param atau Param
-    // Sesuai plan: GET /projects/:projectId/tasks itu ada di ProjectsController sebenarnya,
-    // tapi lebih rapi jika endpoint '/tasks' support filter projectId lewat query.
-    // ATAU kita buat route khusus di sini.
-    // Mari ikuti Plan: GET /projects/:projectId/tasks disarankan di plan,
-    // tapi karena kita di TasksController, lebih RESTful jika GET /tasks?projectId=...
-    // User Plan says: GET /projects/:projectId/tasks
-    // Mari kita support query param di sini saja untuk kemudahan: GET /tasks?projectId=UUID
     @Get()
     findAll(@Request() req: any, @Query('projectId') projectId: string) {
         return this.tasksService.findAll(req.user.userId, projectId);
