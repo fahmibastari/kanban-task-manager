@@ -51,4 +51,14 @@ A professional full-stack Kanban board application demonstrating clean architect
    ```
 
 ### Frontend
-*Coming Soon*
+1. Install dependencies:
+   ```bash
+   cd frontend
+   npm install
+   ```
+2. Run Development Server:
+   ```bash
+   npm run dev
+   ```
+3. Open your browser:
+   Navigate to [http://localhost:3000](http://localhost:3000). The app will automatically redirect to the login page.
