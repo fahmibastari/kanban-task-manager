@@ -26,7 +26,7 @@ export class AuthController {
       maxAge: 1000 * 60 * 60 * 24,
     });
 
-    return { message: 'Login sukses' };
+    return { message: 'Login successful' };
   }
 
   @UseGuards(JwtAuthGuard)
@@ -38,6 +38,6 @@ export class AuthController {
   @Post('logout')
   logout(@Res({ passthrough: true }) response: Response) {
     response.clearCookie('access_token');
-    return { message: 'Logout sukses' };
+    return { message: 'Logout successful' };
   }
 }

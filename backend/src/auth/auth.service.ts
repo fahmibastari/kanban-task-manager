@@ -26,12 +26,12 @@ export class AuthService {
   async login(email: string, pass: string) {
     const user = await this.usersService.findByEmail(email);
     if (!user) {
-      throw new UnauthorizedException('Email atau password salah');
+      throw new UnauthorizedException('Invalid email or password');
     }
 
     const isMatch = await bcrypt.compare(pass, user.password);
     if (!isMatch) {
-      throw new UnauthorizedException('Email atau password salah');
+      throw new UnauthorizedException('Invalid email or password');
     }
 
     const payload = { sub: user.id, email: user.email };

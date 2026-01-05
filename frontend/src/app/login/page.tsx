@@ -22,7 +22,7 @@ export default function LoginPage() {
         try {
             await login(email, password);
         } catch (err: any) {
-            setError('Login gagal. Periksa email dan password.');
+            setError('Login failed. Please check your email and password.');
         } finally {
             setLoading(false);
         }
@@ -32,9 +32,9 @@ export default function LoginPage() {
         <div className="flex h-screen w-full items-center justify-center bg-gray-100 dark:bg-gray-900">
             <Card className="w-full max-w-md">
                 <CardHeader>
-                    <CardTitle className="text-2xl">Masuk</CardTitle>
+                    <CardTitle className="text-2xl">Login</CardTitle>
                     <CardDescription>
-                        Masukkan email dan password untuk mengakses akun Anda.
+                        Enter your email and password to access your account.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -62,15 +62,15 @@ export default function LoginPage() {
                         </div>
                         {error && <p className="text-sm text-red-500">{error}</p>}
                         <Button type="submit" className="w-full" disabled={loading}>
-                            {loading ? 'Memproses...' : 'Masuk'}
+                            {loading ? 'Processing...' : 'Login'}
                         </Button>
                     </form>
                 </CardContent>
                 <CardFooter className="justify-center">
                     <p className="text-sm text-gray-500">
-                        Belum punya akun?{' '}
+                        Don't have an account?{' '}
                         <Link href="/register" className="text-blue-600 hover:underline">
-                            Daftar
+                            Register
                         </Link>
                     </p>
                 </CardFooter>

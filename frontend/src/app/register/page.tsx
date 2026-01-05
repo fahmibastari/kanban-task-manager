@@ -22,7 +22,7 @@ export default function RegisterPage() {
         try {
             await register(email, password);
         } catch (err: any) {
-            setError('Registrasi gagal. Email mungkin sudah terdaftar.');
+            setError('Registration failed. Email might already be registered.');
         } finally {
             setLoading(false);
         }
@@ -32,9 +32,9 @@ export default function RegisterPage() {
         <div className="flex h-screen w-full items-center justify-center bg-gray-100 dark:bg-gray-900">
             <Card className="w-full max-w-md">
                 <CardHeader>
-                    <CardTitle className="text-2xl">Daftar Akun</CardTitle>
+                    <CardTitle className="text-2xl">Create Account</CardTitle>
                     <CardDescription>
-                        Buat akun baru untuk mulai mengelola task.
+                        Create a new account to start managing tasks.
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -63,15 +63,15 @@ export default function RegisterPage() {
                         </div>
                         {error && <p className="text-sm text-red-500">{error}</p>}
                         <Button type="submit" className="w-full" disabled={loading}>
-                            {loading ? 'Memproses...' : 'Daftar'}
+                            {loading ? 'Processing...' : 'Register'}
                         </Button>
                     </form>
                 </CardContent>
                 <CardFooter className="justify-center">
                     <p className="text-sm text-gray-500">
-                        Sudah punya akun?{' '}
+                        Already have an account?{' '}
                         <Link href="/login" className="text-blue-600 hover:underline">
-                            Masuk
+                            Login
                         </Link>
                     </p>
                 </CardFooter>
