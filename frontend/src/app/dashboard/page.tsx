@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/auth-context';
+import { useRouter } from 'next/navigation';
 import KanbanBoard from '@/components/KanbanBoard';
 import api from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -30,16 +31,19 @@ interface Project {
 
 export default function DashboardPage() {
     const { user, logout, loading: authLoading } = useAuth();
+    const router = useRouter(); // add router
     const [projects, setProjects] = useState<Project[]>([]);
     const [selectedProject, setSelectedProject] = useState<string | null>(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [newProjectName, setNewProjectName] = useState('');
 
     useEffect(() => {
-        if (user) {
+        if (!authLoading && !user) {
+            router.push('/login');
+        } else if (user) {
             fetchProjects();
         }
-    }, [user]);
+    }, [user, authLoading, router]);
 
     const fetchProjects = async () => {
         try {
@@ -105,7 +109,7 @@ export default function DashboardPage() {
     };
 
     if (authLoading) return <div className="p-8">Loading session...</div>;
-    if (!user) return <div className="p-8">Access Denied</div>;
+    if (authLoading || !user) return <div className="p-8">Loading session...</div>;
 
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
